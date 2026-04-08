@@ -3,177 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Walid's Vocabulary App</title>
+    <title>Smart Vocab App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
+            --primary: #6366f1;
+            --success: #22c55e;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --card: #ffffff;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
+            padding: 0;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+
+        header {
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: white;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        h1 { color: var(--primary-color); margin-bottom: 10px; }
+        .container { padding: 15px; max-width: 600px; margin: auto; }
 
-        .search-container {
+        /* Search Bar */
+        .search-box {
             width: 100%;
-            max-width: 600px;
-            margin-bottom: 20px;
-        }
-
-        #searchInput {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 1px solid #e2e8f0;
             font-size: 16px;
+            margin-bottom: 20px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: 0.3s;
         }
+        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
 
-        #searchInput:focus { border-color: var(--accent-color); }
-
-        .vocab-list {
-            width: 100%;
-            max-width: 600px;
-            display: grid;
-            gap: 15px;
-        }
-
+        /* Vocab Card */
         .vocab-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-left: 5px solid var(--accent-color);
-        }
-
-        .word-header {
+            background: var(--card);
+            padding: 18px;
+            border-radius: 16px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+        .vocab-card:active { transform: scale(0.98); }
 
-        .word {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--primary-color);
+        .word-info .word { font-size: 20px; font-weight: 600; display: block; }
+        .word-info .meaning { font-size: 14px; color: #64748b; }
+
+        .done-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
         }
+        .done-btn.completed { background: var(--success); color: white; }
 
-        .exam-tag {
-            background: #e74c3c;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         }
+        .nav-item { border: none; background: none; color: #94a3b8; font-weight: 600; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
 
-        .meaning { color: #27ae60; font-weight: 600; margin-bottom: 8px; }
-
-        .synonyms, .antonyms {
-            font-size: 14px;
-            margin-top: 5px;
-            color: #555;
+        /* Modal Details */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
         }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .label { font-weight: bold; color: #333; }
+        /* Exam View */
+        .exam-section { display: none; text-align: center; }
+        .option-btn {
+            display: block; width: 100%; padding: 15px;
+            margin: 10px 0; border: 2px solid #e2e8f0;
+            border-radius: 12px; background: white;
+            cursor: pointer; font-size: 16px;
+        }
+        .option-btn:hover { background: #f8fafc; }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <h1>ভোকাবুলারি অ্যাপ</h1>
-    
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="শব্দ খুঁজুন (Search word)..." onkeyup="filterWords()">
+<header>
+    <h2 id="view-title">My Vocabulary</h2>
+</header>
+
+<div class="container" id="home-view">
+    <input type="text" class="search-box" placeholder="শব্দ খুঁজুন..." onkeyup="filterWords()">
+    <div id="vocabList"></div>
+</div>
+
+<div class="container exam-section" id="exam-view">
+    <div id="exam-container">
+        <h3 id="exam-question">প্রশ্ন এখানে আসবে</h3>
+        <div id="options-container"></div>
     </div>
+    <div id="exam-empty" class="hidden">
+        <p>অন্তত ৫টি শব্দ "Done" করলে তবেই এক্সাম শুরু হবে!</p>
+    </div>
+</div>
 
-    <div class="vocab-list" id="vocabList">
-        </div>
+<div class="modal" id="detailsModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 id="modal-word"></h2>
+        <p><strong>অর্থ:</strong> <span id="modal-meaning"></span></p>
+        <p><strong>Synonyms:</strong> <span id="modal-syn"></span></p>
+        <p><strong>Antonyms:</strong> <span id="modal-ant"></span></p>
+        <p><strong>বিগত পরীক্ষায়:</strong> <span id="modal-exam"></span></p>
+        <button onclick="closeModal(null)" style="width:100%; padding:10px; border:none; border-radius:10px; background:var(--primary); color:white; cursor:pointer;">বন্ধ করুন</button>
+    </div>
+</div>
 
-    <script>
-        // আপনার ছবি থেকে নেওয়া ডাটা
-        const vocabularyData = [
-            {
-                word: "Abate",
-                pronunciation: "অ্যাবেইট",
-                meaning: "তীব্রতা কমানো; প্রশমিত করা।",
-                synonyms: "Decrease, Reduce, Diminish, Lessen",
-                antonyms: "Intensify, Enhance, Increase",
-                exam: "14th Primary, 2017"
-            },
-            {
-                word: "Absolute",
-                pronunciation: "অ্যাবসলিউট",
-                meaning: "সম্পূর্ণ; অসীম ক্ষমতাসম্পন্ন; নিঃশর্ত।",
-                synonyms: "Unmitigated, Complete, Peremptory",
-                antonyms: "Abridged, Democratic, Dubious",
-                exam: "BSCS: 2019, Sonali Bank: 19"
-            },
-            {
-                word: "Absurd",
-                pronunciation: "অ্যাবসার্ড",
-                meaning: "অযৌক্তিক; হাস্যকর।",
-                synonyms: "Unreasonable",
-                antonyms: "Reasonable, Sensible, Cautious",
-                exam: "HSC: 2019"
-            },
-            {
-                word: "Abundant",
-                pronunciation: "অ্যাবানড্যান্ট",
-                meaning: "প্রচুর; অধিক।",
-                synonyms: "Plentiful, Ample, Profuse, Copious",
-                antonyms: "Scarce, Paucity, Meager",
-                exam: "40th BCS Written"
-            },
-            {
-                word: "Accumulate",
-                pronunciation: "অ্যাকিউমিউলেইট",
-                meaning: "পুঞ্জীভূত করা; স্তূপ করা।",
-                synonyms: "Heap, Consolidate, Amass, Muster",
-                antonyms: "Scatter, Disperse",
-                exam: "3 Bank: 2018, MBA: 16"
-            }
-        ];
+<nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchView('home')">Home</button>
+    <button class="nav-item" onclick="switchView('exam')">Exam</button>
+</nav>
 
-        function displayWords(data) {
-            const list = document.getElementById('vocabList');
-            list.innerHTML = "";
-            data.forEach(item => {
-                list.innerHTML += `
-                    <div class="vocab-card">
-                        <div class="word-header">
-                            <span class="word">${item.word} <small>(${item.pronunciation})</small></span>
-                            ${item.exam ? `<span class="exam-tag">${item.exam}</span>` : ''}
-                        </div>
-                        <div class="meaning">${item.meaning}</div>
-                        <div class="synonyms"><span class="label">Synonyms:</span> ${item.synonyms}</div>
-                        <div class="antonyms"><span class="label">Antonyms:</span> ${item.antonyms}</div>
-                    </div>
-                `;
+<script>
+    // ডামি ডাটাবেজ (ছবির ডাটাগুলো এখানে যোগ করবেন)
+    let vocabularyData = [
+        { id: 1, word: "Abate", meaning: "তীব্রতা কমানো", syn: "Decrease, Reduce", ant: "Intensify", exam: "14th Primary", done: false },
+        { id: 2, word: "Absolute", meaning: "সম্পূর্ণ/নিঃশর্ত", syn: "Complete, Unmitigated", ant: "Democratic", exam: "BCS, Sonali Bank", done: false },
+        { id: 3, word: "Absurd", meaning: "অযৌক্তিক/হাস্যকর", syn: "Unreasonable", ant: "Sensible", exam: "HSC 2019", done: false },
+        { id: 4, word: "Abundant", meaning: "প্রচুর", syn: "Plentiful, Ample", ant: "Scarce", exam: "40th BCS", done: false },
+        { id: 5, word: "Accumulate", meaning: "পুঞ্জীভূত করা", syn: "Amass, Heap", ant: "Disperse", exam: "MBA, Bank", done: false }
+    ];
+
+    // LocalStorage থেকে Done স্টেট লোড করা
+    function loadStorage() {
+        const saved = localStorage.getItem('doneWords');
+        if (saved) {
+            const doneIds = JSON.parse(saved);
+            vocabularyData.forEach(item => {
+                if (doneIds.includes(item.id)) item.done = true;
             });
         }
+    }
 
-        function filterWords() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = vocabularyData.filter(item => 
-                item.word.toLowerCase().includes(term) || 
-                item.meaning.includes(term)
-            );
-            displayWords(filtered);
+    function renderWords(data = vocabularyData) {
+        const list = document.getElementById('vocabList');
+        list.innerHTML = "";
+        data.forEach(item => {
+            list.innerHTML += `
+                <div class="vocab-card" onclick="openDetails(${item.id})">
+                    <div class="word-info">
+                        <span class="word">${item.word}</span>
+                        <span class="meaning">${item.meaning}</span>
+                    </div>
+                    <button class="done-btn ${item.done ? 'completed' : ''}" 
+                            onclick="toggleDone(event, ${item.id})">
+                        ${item.done ? '✓' : '+'}
+                    </button>
+                </div>
+            `;
+        });
+    }
+
+    function toggleDone(event, id) {
+        event.stopPropagation();
+        const item = vocabularyData.find(v => v.id === id);
+        item.done = !item.done;
+        
+        // Save to LocalStorage
+        const doneIds = vocabularyData.filter(v => v.done).map(v => v.id);
+        localStorage.setItem('doneWords', JSON.stringify(doneIds));
+        
+        renderWords();
+    }
+
+    function openDetails(id) {
+        const item = vocabularyData.find(v => v.id === id);
+        document.getElementById('modal-word').innerText = item.word;
+        document.getElementById('modal-meaning').innerText = item.meaning;
+        document.getElementById('modal-syn').innerText = item.syn;
+        document.getElementById('modal-ant').innerText = item.ant;
+        document.getElementById('modal-exam').innerText = item.exam;
+        document.getElementById('detailsModal').style.display = 'flex';
+    }
+
+    function closeModal(e) {
+        document.getElementById('detailsModal').style.display = 'none';
+    }
+
+    function switchView(view) {
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        if (view === 'home') {
+            document.getElementById('home-view').style.display = 'block';
+            document.getElementById('exam-view').style.display = 'none';
+            document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+            renderWords();
+        } else {
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('exam-view').style.display = 'block';
+            document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+            startExam();
+        }
+    }
+
+    // Exam Logic
+    function startExam() {
+        const doneWords = vocabularyData.filter(v => v.done);
+        const examContainer = document.getElementById('exam-container');
+        const emptyMsg = document.getElementById('exam-empty');
+
+        if (doneWords.length < 3) {
+            examContainer.classList.add('hidden');
+            emptyMsg.classList.remove('hidden');
+            return;
         }
 
-        // শুরুতে সব ডাটা দেখাবে
-        displayWords(vocabularyData);
-    </script>
+        examContainer.classList.remove('hidden');
+        emptyMsg.classList.add('hidden');
+
+        // Pick random question
+        const questionWord = doneWords[Math.floor(Math.random() * doneWords.length)];
+        document.getElementById('exam-question').innerText = `"${questionWord.word}" এর সঠিক অর্থ কোনটি?`;
+
+        // Create options
+        let options = [questionWord.meaning];
+        while (options.length < 4) {
+            let randomWord = vocabularyData[Math.floor(Math.random() * vocabularyData.length)].meaning;
+            if (!options.includes(randomWord)) options.push(randomWord);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        const optContainer = document.getElementById('options-container');
+        optContainer.innerHTML = "";
+        options.forEach(opt => {
+            optContainer.innerHTML += `<button class="option-btn" onclick="checkAnswer('${opt}', '${questionWord.meaning}')">${opt}</button>`;
+        });
+    }
+
+    function checkAnswer(selected, correct) {
+        if (selected === correct) {
+            alert("সঠিক উত্তর! 🎉");
+        } else {
+            alert("ভুল উত্তর, সঠিক ছিল: " + correct);
+        }
+        startExam();
+    }
+
+    function filterWords() {
+        const q = document.querySelector('.search-box').value.toLowerCase();
+        const filtered = vocabularyData.filter(v => v.word.toLowerCase().includes(q));
+        renderWords(filtered);
+    }
+
+    // Initialize
+    loadStorage();
+    renderWords();
+</script>
+
 </body>
 </html>
