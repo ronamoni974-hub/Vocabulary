@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walid's Vocabulary App</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: var(--primary-color); margin-bottom: 10px; }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus { border-color: var(--accent-color); }
+
+        .vocab-list {
+            width: 100%;
+            max-width: 600px;
+            display: grid;
+            gap: 15px;
+        }
+
+        .vocab-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .word-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .word {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .exam-tag {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .meaning { color: #27ae60; font-weight: 600; margin-bottom: 8px; }
+
+        .synonyms, .antonyms {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #555;
+        }
+
+        .label { font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+
+    <h1>ভোকাবুলারি অ্যাপ</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="শব্দ খুঁজুন (Search word)..." onkeyup="filterWords()">
+    </div>
+
+    <div class="vocab-list" id="vocabList">
+        </div>
+
+    <script>
+        // আপনার ছবি থেকে নেওয়া ডাটা
+        const vocabularyData = [
+            {
+                word: "Abate",
+                pronunciation: "অ্যাবেইট",
+                meaning: "তীব্রতা কমানো; প্রশমিত করা।",
+                synonyms: "Decrease, Reduce, Diminish, Lessen",
+                antonyms: "Intensify, Enhance, Increase",
+                exam: "14th Primary, 2017"
+            },
+            {
+                word: "Absolute",
+                pronunciation: "অ্যাবসলিউট",
+                meaning: "সম্পূর্ণ; অসীম ক্ষমতাসম্পন্ন; নিঃশর্ত।",
+                synonyms: "Unmitigated, Complete, Peremptory",
+                antonyms: "Abridged, Democratic, Dubious",
+                exam: "BSCS: 2019, Sonali Bank: 19"
+            },
+            {
+                word: "Absurd",
+                pronunciation: "অ্যাবসার্ড",
+                meaning: "অযৌক্তিক; হাস্যকর।",
+                synonyms: "Unreasonable",
+                antonyms: "Reasonable, Sensible, Cautious",
+                exam: "HSC: 2019"
+            },
+            {
+                word: "Abundant",
+                pronunciation: "অ্যাবানড্যান্ট",
+                meaning: "প্রচুর; অধিক।",
+                synonyms: "Plentiful, Ample, Profuse, Copious",
+                antonyms: "Scarce, Paucity, Meager",
+                exam: "40th BCS Written"
+            },
+            {
+                word: "Accumulate",
+                pronunciation: "অ্যাকিউমিউলেইট",
+                meaning: "পুঞ্জীভূত করা; স্তূপ করা।",
+                synonyms: "Heap, Consolidate, Amass, Muster",
+                antonyms: "Scatter, Disperse",
+                exam: "3 Bank: 2018, MBA: 16"
+            }
+        ];
+
+        function displayWords(data) {
+            const list = document.getElementById('vocabList');
+            list.innerHTML = "";
+            data.forEach(item => {
+                list.innerHTML += `
+                    <div class="vocab-card">
+                        <div class="word-header">
+                            <span class="word">${item.word} <small>(${item.pronunciation})</small></span>
+                            ${item.exam ? `<span class="exam-tag">${item.exam}</span>` : ''}
+                        </div>
+                        <div class="meaning">${item.meaning}</div>
+                        <div class="synonyms"><span class="label">Synonyms:</span> ${item.synonyms}</div>
+                        <div class="antonyms"><span class="label">Antonyms:</span> ${item.antonyms}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterWords() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = vocabularyData.filter(item => 
+                item.word.toLowerCase().includes(term) || 
+                item.meaning.includes(term)
+            );
+            displayWords(filtered);
+        }
+
+        // শুরুতে সব ডাটা দেখাবে
+        displayWords(vocabularyData);
+    </script>
+</body>
+</html>
